@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_sms/flutter_sms.dart';
 
 import '../database/helper/contacts_helper.dart';
 import '../database/models/contact.dart';
@@ -50,24 +51,36 @@ class _SosPageState extends State<SosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("S.O.S"),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              addContact();
-            },
-            icon: Icon(Icons.add),
-          )
-        ],
-        // backgroundColor: Colors.deepPurple,
-      ),
+      appBar: AppBar(title: Text("S.O.S"), actions: [
+        IconButton(
+          onPressed: () async {
+            if (contacts.isNotEmpty) {
+              List<String> recipents = [];
+              contacts.forEach((contact) {
+                recipents.add(contact.phone);
+              });
+              await sendSMS(
+                  message: "I'm crashed , Pls help me ", recipients: recipents);
+            }
+          },
+          icon: Icon(Icons.forward_to_inbox),
+        ),
+        IconButton(
+          onPressed: () async {
+            addContact();
+          },
+          icon: Icon(Icons.add),
+        )
+      ]
+          // backgroundColor: Colors.deepPurple,
+          ),
       body: ListView.builder(
         itemBuilder: (context, index) {
           // Uint8List? imageBytes = contacts[index].photo;
           return ListTile(
             title: Text(contacts[index].name),
             subtitle: Text(contacts[index].phone),
+
             // leading: imageBytes != null
             //     ? CircleAvatar(
             //         backgroundImage: MemoryImage(imageBytes),
