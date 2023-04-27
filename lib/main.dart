@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:smarthelmet/homepage.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
 import 'database/helper/contacts_helper.dart';
+import 'network/helpers/weather_api_helper.dart';
+import 'services/bluetooth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,17 +21,34 @@ void main() async {
     },
   );
 
+  http.Client client = http.Client();
+
+  final flutterBlue = FlutterBluePlus.instance;
+
   ContactHelper contactHelper = ContactHelper(db: database);
+
+  WeatherApiHelper weatherApiHelper = WeatherApiHelper(client);
+
+  BluetoothDeviceService bluetoothService = BluetoothDeviceService(flutterBlue);
   runApp(
     Hertx(
       contactHelper: contactHelper,
+      weatherApiHelper: weatherApiHelper,
+      bluetoothService: bluetoothService,
     ),
   );
 }
 
 class Hertx extends StatelessWidget {
   final ContactHelper contactHelper;
-  const Hertx({super.key, required this.contactHelper});
+  final WeatherApiHelper weatherApiHelper;
+  final BluetoothDeviceService bluetoothService;
+
+  const Hertx(
+      {super.key,
+      required this.contactHelper,
+      required this.weatherApiHelper,
+      required this.bluetoothService});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +56,9 @@ class Hertx extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.red,
+
         brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.red[50],
         //appBarTheme: AppBarTheme()
       ),
       darkTheme: ThemeData(
@@ -43,15 +66,20 @@ class Hertx extends StatelessWidget {
         brightness: Brightness.dark,
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.red,
+          //backgroundColor: Colors.red
+          //scaffoldBackgroundColor:Colors.red[100;]
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
           selectedItemColor: Colors.red,
+
           //unselectedItemColor: Colors.blueGrey
         ),
       ),
       themeMode: ThemeMode.system,
       home: HomePage(
         contactHelper: contactHelper,
+        weatherApiHelper: weatherApiHelper,
+        bluetoothService: bluetoothService,
       ),
     );
   }
