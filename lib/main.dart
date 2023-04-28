@@ -3,6 +3,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:smarthelmet/homepage.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
+import 'package:location/location.dart';
 
 import 'database/helper/contacts_helper.dart';
 import 'network/helpers/weather_api_helper.dart';
@@ -25,11 +26,32 @@ void main() async {
 
   final flutterBlue = FlutterBluePlus.instance;
 
+  Location location = Location();
+
   ContactHelper contactHelper = ContactHelper(db: database);
 
   WeatherApiHelper weatherApiHelper = WeatherApiHelper(client);
 
   BluetoothDeviceService bluetoothService = BluetoothDeviceService(flutterBlue);
+
+  bool serviceEnabled;
+  PermissionStatus permissionGranted;
+
+  serviceEnabled = await location.serviceEnabled();
+  if (!serviceEnabled) {
+    serviceEnabled = await location.requestService();
+    if (!serviceEnabled) {
+      return;
+    }
+  }
+
+  permissionGranted = await location.hasPermission();
+  if (permissionGranted == PermissionStatus.denied) {
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) {
+      return;
+    }
+  }
   runApp(
     Hertx(
       contactHelper: contactHelper,
